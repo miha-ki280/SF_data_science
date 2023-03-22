@@ -1,48 +1,42 @@
+# Импортируем библиотеку Numpy
 import numpy as np
 
-def random_predict(number:int=1) -> int:
-    """Рандомно угадываем число
-
-    Args:
-        number (int, optional): Загаданное число. Defaults to 1.
-
-    Returns:
-        int: Число попыток
-    """
-
-    count = 0
-
-    while True:
-        count += 1
-        predict_number = np.random.randint(1, 20) # предполагаемое число
-        if number == predict_number:
-            break # выход из цикла, если угадали
-    return(count)
-
-print(f'Количество попыток: {random_predict()}')
-
-def score_game(random_predict) -> int:
-    """За какое количество попыток в среднем из 1000 подходов угадывает наш алгоритм
-
-    Args:
-        random_predict ([type]): функция угадывания
-
-    Returns:
-        int: среднее количество попыток
-    """
-
-    count_ls = [] # список для сохранения количества попыток
-    np.random.seed(1) # фиксируем сид для воспроизводимости
-    random_array = np.random.randint(1, 20, size=(1000)) # загадали список чисел
-
-    for number in random_array:
-        count_ls.append(random_predict(number))
-
-    score = int(np.mean(count_ls)) # находим среднее количество попыток
-
-    print(f'Ваш алгоритм угадывает число в среднем за: {score} попыток')
+# Определяем функцию подсчета результата
+def game_score(game_core):
+    '''Запускаем игру 1000 раз, чтобы узнать, как быстро игра угадывает число
+    Функция принимает функцию, которая реализует игру.
+    Функция возвращает среднее количествово попыток.
+    '''
+    count_list = []
+    np.random.seed(42)  # фиксируем RANDOM SEED, чтобы эксперимент был воспроизводим
+    random_numbers = np.random.randint(1,101, size=(1000))
+    
+    for number in random_numbers:
+        count_list.append(game_core(number))
+    score = int(np.mean(count_list))
+    
     return(score)
 
-# RUN
-if __name__ == '__main__':
-    score_game(random_predict)
+# Определяем функцию игры
+def game_core(number):
+    '''Устанавливаем минимальное и максимальное возможное значение.
+    На каждом этапе уменьшаем диапазон в 2 раза с учетом ответа больше/меньше.
+    Функция принимает загаданное число и возвращает число попыток.
+    '''
+    count = 1
+    min_value = 1
+    max_value = 100
+    predict = 50
+    
+    while predict != number:
+        if number > predict:
+            min_value = predict + 1
+        elif number < predict:
+            max_value = predict - 1
+        count += 1
+        predict = (min_value+max_value) // 2
+
+    return(count)
+
+# Проверяем
+print('Алгоритм угадывает число в среднем за {} попыток'.format(game_score(game_core)))
